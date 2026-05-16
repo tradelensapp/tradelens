@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TradeLens AI | Agente Inteligente de Análisis Bursátil</title>
+
+  <meta name="description" content="TradeLens AI analiza acciones con inteligencia artificial, verifica datos, mide riesgos y genera reportes claros para investigación financiera." />
+  <meta name="keywords" content="TradeLens AI, análisis de acciones, inteligencia artificial, bolsa de valores, trading, inversión, riesgo financiero, análisis bursátil" />
+  <meta name="author" content="TradeLens AI" />
+
+  <meta property="og:title" content="TradeLens AI | Analiza acciones con IA" />
+  <meta property="og:description" content="Agente financiero con IA para analizar acciones, verificar datos, medir riesgos y crear alertas inteligentes." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-soft: #0b1020;
+      --card: rgba(255, 255, 255, 0.075);
+      --card-strong: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.14);
+      --text: #f5f7fb;
+      --muted: #aab3c5;
+      --blue: #3b82f6;
+      --cyan: #22d3ee;
+      --purple: #8b5cf6;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --red: #ef4444;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.22), transparent 28%),
+        radial-gradient(circle at 85% 8%, rgba(139, 92, 246, 0.24), transparent 28%),
+        radial-gradient(circle at 50% 90%, rgba(34, 211, 238, 0.13), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.045;
+      background-image:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      z-index: -1;
+    }
+
+    .container {
+      width: min(100% - 32px, var(--max));
+      margin: 0 auto;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(5, 8, 22, 0.78);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      min-height: 76px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(34, 211, 238, 0.95), rgba(59, 130, 246, 0.95), rgba(139, 92, 246, 0.95));
+      box-shadow: 0 0 28px rgba(59, 130, 246, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-icon::after {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255,255,255,.9);
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      transform: rotate(-35deg);
+      border-radius: 50%;
+    }
+
+    .brand span {
+      font-family: "Orbitron", sans-serif;
+      font-size: 1.05rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.93rem;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      border: 0;
+      cursor: pointer;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      background: var(--card-strong);
+      box-shadow: 0 14px 35px rgba(0,0,0,.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--blue), var(--purple));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 45px rgba(59, 130, 246, 0.32);
+    }
+
+    .btn-dark {
+      background: rgba(0,0,0,.24);
+    }
+
+    .hero {
+      padding: 92px 0 56px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.92fr;
+      gap: 38px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      border-radius: 999px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(34,197,94,.6);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      70% {
+        box-shadow: 0 0 0 12px rgba(34,197,94,0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(34,197,94,0);
+      }
+    }
+
+    h1 {
+      font-size: clamp(2.45rem, 6vw, 5.4rem);
+      line-height: 0.96;
+      letter-spacing: -0.075em;
+      margin-bottom: 22px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #fff, #a5f3fc, #93c5fd, #c4b5fd);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1.75;
+      max-width: 650px;
+      margin-bottom: 28px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .trust-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 680px;
+    }
+
+    .trust-card {
+      padding: 15px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--border);
+    }
+
+    .trust-card strong {
+      display: block;
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .trust-card span {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .terminal-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .terminal-card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, rgba(34,211,238,.18), transparent, rgba(139,92,246,.18));
+      pointer-events: none;
+    }
+
+    .terminal-top {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.22);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 99px;
+    }
+
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green { background: #28c840; }
+
+    .terminal-body {
+      padding: 22px;
+      position: relative;
+    }
+
+    .stock-search {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 15px;
+      outline: none;
+      font-weight: 600;
+    }
+
+    .input::placeholder {
+      color: rgba(170,179,197,.75);
+    }
+
+    .market-card {
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.20);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .market-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .ticker {
+      font-family: "Orbitron", sans-serif;
+      font-size: 1.55rem;
+      letter-spacing: -0.03em;
+    }
+
+    .company {
+      color: var(--muted);
+      font-size: .92rem;
+      margin-top: 4px;
+    }
+
+    .badge {
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .78rem;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .badge.green {
+      color: #bbf7d0;
+      background: rgba(34,197,94,.13);
+    }
+
+    .badge.yellow {
+      color: #fef08a;
+      background: rgba(250,204,21,.12);
+    }
+
+    .badge.red {
+      color: #fecaca;
+      background: rgba(239,68,68,.12);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 13px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 15px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: .8rem;
+      margin-bottom: 5px;
+    }
+
+    .metric strong {
+      font-size: 1.05rem;
+    }
+
+    .mini-chart {
+      height: 120px;
+      border-radius: 18px;
+      margin-top: 16px;
+      background:
+        linear-gradient(180deg, rgba(34,211,238,.10), transparent),
+        repeating-linear-gradient(to right, rgba(255,255,255,.05) 0 1px, transparent 1px 42px),
+        repeating-linear-gradient(to bottom, rgba(255,255,255,.045) 0 1px, transparent 1px 30px);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .mini-chart svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    section {
+      padding: 72px 0;
+    }
+
+    .section-head {
+      max-width: 760px;
+      margin-bottom: 32px;
+    }
+
+    .section-head.center {
+      margin-inline: auto;
+      text-align: center;
+    }
+
+    .kicker {
+      color: var(--cyan);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: .78rem;
+      letter-spacing: .16em;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.06em;
+      margin-bottom: 16px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 1.02rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .feature-card,
+    .agent-card,
+    .pricing-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 16px 45px rgba(0,0,0,.16);
+      transition: .22s ease;
+    }
+
+    .feature-card:hover,
+    .agent-card:hover,
+    .pricing-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,.085);
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 17px;
+      background: linear-gradient(135deg, rgba(34,211,238,.18), rgba(139,92,246,.18));
+      border: 1px solid rgba(255,255,255,.13);
+      font-size: 1.35rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .feature-card p,
+    .agent-card p,
+    .pricing-card p {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: .96rem;
+    }
+
+    .dashboard {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: rgba(255,255,255,.055);
+    }
+
+    .sidebar {
+      padding: 20px;
+      border-right: 1px solid var(--border);
+      background: rgba(0,0,0,.22);
+    }
+
+    .side-title {
+      font-family: "Orbitron", sans-serif;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .side-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 14px;
+      border-radius: 15px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+      border: 1px solid transparent;
+    }
+
+    .side-link.active,
+    .side-link:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.10);
+    }
+
+    .app-main {
+      padding: 22px;
+    }
+
+    .dashboard-top {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      background: rgba(0,0,0,.18);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .panel-title h3 {
+      margin: 0;
+    }
+
+    .chat-box {
+      display: grid;
+      gap: 12px;
+    }
+
+    .message {
+      padding: 14px 15px;
+      border-radius: 17px;
+      line-height: 1.55;
+      font-size: .94rem;
+    }
+
+    .message.user {
+      background: rgba(59,130,246,.16);
+      border: 1px solid rgba(59,130,246,.25);
+      margin-left: 40px;
+    }
+
+    .message.ai {
+      background: rgba(255,255,255,.065);
+      border: 1px solid rgba(255,255,255,.10);
+      margin-right: 28px;
+    }
+
+    .chat-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .risk-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .risk-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 15px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+
+    .risk-item span {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .progress {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.1);
+      overflow: hidden;
+      margin-top: 7px;
+    }
+
+    .progress > div {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple));
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .analysis-card {
+      padding: 17px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+
+    .analysis-card span {
+      display: block;
+      color: var(--muted);
+      font-size: .83rem;
+      margin-bottom: 8px;
+    }
+
+    .analysis-card strong {
+      font-size: 1.05rem;
+    }
+
+    .agent-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .flow-card {
+      padding: 18px 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--border);
+      text-align: center;
+      min-height: 134px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .flow-card .number {
+      margin: 0 auto 10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      font-weight: 900;
+    }
+
+    .flow-card strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: .95rem;
+    }
+
+    .flow-card span {
+      color: var(--muted);
+      font-size: .8rem;
+      line-height: 1.45;
+    }
+
+    .pricing-card.featured {
+      border-color: rgba(34,211,238,.5);
+      box-shadow: 0 22px 65px rgba(34,211,238,.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-card.featured::before {
+      content: "RECOMENDADO";
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      font-size: .68rem;
+      font-weight: 900;
+      color: #a5f3fc;
+      background: rgba(34,211,238,.12);
+      border: 1px solid rgba(34,211,238,.24);
+      border-radius: 999px;
+      padding: 7px 9px;
+    }
+
+    .price {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      margin: 18px 0 8px;
+    }
+
+    .price small {
+      font-size: .9rem;
+      color: var(--muted);
+      letter-spacing: 0;
+      font-weight: 700;
+    }
+
+    .pricing-list {
+      list-style: none;
+      margin: 20px 0;
+      display: grid;
+      gap: 11px;
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    .pricing-list li::before {
+      content: "✓";
+      color: var(--green);
+      font-weight: 900;
+      margin-right: 8px;
+    }
+
+    .cta {
+      text-align: center;
+      padding: 78px 0;
+    }
+
+    .cta-box {
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.16), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(139,92,246,.18), transparent 32%),
+        rgba(255,255,255,.06);
+      border-radius: 34px;
+      padding: 48px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .cta-box p {
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 24px;
+      line-height: 1.7;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 34px 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .disclaimer {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px solid rgba(250,204,21,.18);
+      background: rgba(250,204,21,.07);
+      border-radius: 18px;
+      color: #fde68a;
+      line-height: 1.6;
+      font-size: .9rem;
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .dashboard-top,
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .grid-3,
+      .grid-4,
+      .analysis-grid,
+      .agent-flow {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .mobile-menu {
+        display: inline-flex;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding-top: 58px;
+      }
+
+      .nav-actions .btn-dark {
+        display: none;
+      }
+
+      .trust-row,
+      .grid-3,
+      .grid-4,
+      .analysis-grid,
+      .agent-flow,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stock-search,
+      .chat-form {
+        grid-template-columns: 1fr;
+      }
+
+      .message.user,
+      .message.ai {
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="noise"></div>
+
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="brand">
+        <div class="brand-icon"></div>
+        <span>TradeLens AI</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#features">Funciones</a>
+        <a href="#agents">Agentes</a>
+        <a href="#dashboard">Demo</a>
+        <a href="#pricing">Planes</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#dashboard" class="btn btn-dark">Ver demo</a>
+        <a href="#pricing" class="btn btn-primary">Comenzar</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">
+            <span class="pulse-dot"></span>
+            Agente IA para análisis bursátil
+          </div>
+
+          <h1>
+            Analiza acciones con
+            <span class="gradient-text">IA, datos y control de riesgo.</span>
+          </h1>
+
+          <p>
+            TradeLens AI ayuda a investigar acciones, resumir noticias, medir riesgos,
+            verificar datos y generar escenarios de mercado de forma clara. Diseñado para
+            usuarios que quieren entender antes de decidir.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#dashboard" class="btn btn-primary">Probar análisis demo</a>
+            <a href="#agents" class="btn">Ver arquitectura IA</a>
+          </div>
+
+          <div class="trust-row">
+            <div class="trust-card">
+              <strong>8+</strong>
+              <span>Sub-agentes especializados</span>
+            </div>
+            <div class="trust-card">
+              <strong>24/7</strong>
+              <span>Watchlist y alertas inteligentes</span>
+            </div>
+            <div class="trust-card">
+              <strong>Risk</strong>
+              <span>Análisis de riesgo integrado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="terminal-card">
+          <div class="terminal-top">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+
+          <div class="terminal-body">
+            <div class="stock-search">
+              <input id="tickerInput" class="input" type="text" value="NVDA" placeholder="Buscar ticker: AAPL, TSLA, NVDA..." />
+              <button class="btn btn-primary" onclick="runDemoAnalysis()">Analizar</button>
+            </div>
+
+            <div class="market-card">
+              <div class="market-head">
+                <div>
+                  <div id="tickerName" class="ticker">NVDA</div>
+                  <div id="companyName" class="company">NVIDIA Corporation</div>
+                </div>
+                <span id="riskBadge" class="badge yellow">Riesgo Medio-Alto</span>
+              </div>
+
+              <div class="metric-grid">
+                <div class="metric">
+                  <span>Precio demo</span>
+                  <strong id="demoPrice">$924.50</strong>
+                </div>
+                <div class="metric">
+                  <span>Tendencia</span>
+                  <strong id="demoTrend">Alcista</strong>
+                </div>
+                <div class="metric">
+                  <span>Confianza</span>
+                  <strong id="demoConfidence">74%</strong>
+                </div>
+              </div>
+
+              <div class="mini-chart">
+                <svg viewBox="0 0 500 120" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0" x2="1">
+                      <stop offset="0%" stop-color="#22d3ee"/>
+                      <stop offset="55%" stop-color="#3b82f6"/>
+                      <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,88 C40,76 70,92 110,70 C150,48 180,62 220,44 C270,20 310,44 350,30 C400,12 430,28 500,18"
+                        fill="none" stroke="url(#lineGrad)" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M0,88 C40,76 70,92 110,70 C150,48 180,62 220,44 C270,20 310,44 350,30 C400,12 430,28 500,18 L500,120 L0,120 Z"
+                        fill="rgba(34,211,238,.10)"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="market-card">
+              <div class="panel-title">
+                <h3>Resumen IA</h3>
+                <span class="badge green">Verificado</span>
+              </div>
+              <p id="aiSummary" style="color: var(--muted); line-height: 1.65;">
+                NVIDIA muestra fortaleza por demanda de IA, pero su valoración exige cautela.
+                El análisis la clasifica como favorable para investigación, no como recomendación personalizada.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">Funciones principales</div>
+          <h2>Más que un chatbot financiero.</h2>
+          <p>
+            TradeLens AI debe funcionar como una plataforma completa de investigación:
+            analiza, compara, verifica, mide riesgo y guarda memoria del usuario.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <div class="feature-card">
+            <div class="icon">📊</div>
+            <h3>Análisis de acciones</h3>
+            <p>Evalúa precio, tendencia, volumen, métricas financieras, noticias y posibles escenarios.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">🛡️</div>
+            <h3>Verificador de datos</h3>
+            <p>Un sub-agente revisa que la respuesta no contenga afirmaciones débiles, exageradas o sin sustento.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">⚠️</div>
+            <h3>Motor de riesgo</h3>
+            <p>Clasifica volatilidad, valoración, eventos próximos, riesgo sectorial y sensibilidad al mercado.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">🧠</div>
+            <h3>Memoria del usuario</h3>
+            <p>Guarda watchlist, perfil de riesgo, historial de análisis, preferencias y alertas configuradas.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">🔔</div>
+            <h3>Alertas inteligentes</h3>
+            <p>Permite alertas por precio, noticias, RSI, volumen, earnings y cambios importantes.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="icon">📄</div>
+            <h3>Reportes premium</h3>
+            <p>Genera reportes claros para usuarios, comunidades, academias financieras o planes white-label.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="agents">
+      <div class="container">
+        <div class="section-head center">
+          <div class="kicker">Arquitectura IA</div>
+          <h2>Un sistema multi-agente para analizar con mayor control.</h2>
+          <p>
+            La idea fuerte de TradeLens AI es que no dependa de una sola respuesta.
+            Cada análisis pasa por módulos especializados antes de llegar al usuario.
+          </p>
+        </div>
+
+        <div class="agent-flow">
+          <div class="flow-card">
+            <div class="number">1</div>
+            <strong>Orquestador</strong>
+            <span>Recibe la solicitud y decide qué agentes activar.</span>
+          </div>
+
+          <div class="flow-card">
+            <div class="number">2</div>
+            <strong>Market Data</strong>
+            <span>Busca precios, métricas y datos históricos.</span>
+          </div>
+
+          <div class="flow-card">
+            <div class="number">3</div>
+            <strong>Risk Agent</strong>
+            <span>Evalúa volatilidad, deuda, valoración y eventos.</span>
+          </div>
+
+          <div class="flow-card">
+            <div class="number">4</div>
+            <strong>Truth Guard</strong>
+            <span>Verifica datos y detecta afirmaciones no sustentadas.</span>
+          </div>
+
+          <div class="flow-card">
+            <div class="number">5</div>
+            <strong>Compliance</strong>
+            <span>Evita promesas, exageraciones y lenguaje de asesoría directa.</span>
+          </div>
+        </div>
+
+        <div style="height: 22px;"></div>
+
+        <div class="grid-4">
+          <div class="agent-card">
+            <div class="icon">📈</div>
+            <h3>Agente Técnico</h3>
+            <p>RSI, medias móviles, MACD, soporte, resistencia y momentum.</p>
+          </div>
+
+          <div class="agent-card">
+            <div class="icon">🏢</div>
+            <h3>Agente Fundamental</h3>
+            <p>Ingresos, márgenes, deuda, crecimiento, valoración y flujo de caja.</p>
+          </div>
+
+          <div class="agent-card">
+            <div class="icon">📰</div>
+            <h3>Agente de Noticias</h3>
+            <p>Resume noticias recientes y detecta eventos que puedan afectar el precio.</p>
+          </div>
+
+          <div class="agent-card">
+            <div class="icon">🎓</div>
+            <h3>Agente Educativo</h3>
+            <p>Explica conceptos complejos en lenguaje claro para principiantes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">Demo inicial</div>
+          <h2>Dashboard base para convertirlo en SaaS.</h2>
+          <p>
+            Esta sección simula cómo se verá la plataforma. Luego se conecta con Gemini,
+            Firebase, APIs financieras, Stripe y sistema de alertas.
+          </p>
+        </div>
+
+        <div class="app-shell">
+          <aside class="sidebar">
+            <div class="side-title">TRADELENS AI</div>
+            <a class="side-link active" href="#dashboard">Dashboard <span>⌘</span></a>
+            <a class="side-link" href="#dashboard">Watchlist <span>12</span></a>
+            <a class="side-link" href="#dashboard">Alertas <span>5</span></a>
+            <a class="side-link" href="#dashboard">Reportes <span>Pro</span></a>
+            <a class="side-link" href="#dashboard">Educación <span>New</span></a>
+          </aside>
+
+          <div class="app-main">
+            <div class="dashboard-top">
+              <div class="panel">
+                <div class="panel-title">
+                  <h3>Chat con agente IA</h3>
+                  <span class="badge green">Demo</span>
+                </div>
+
+                <div id="chatBox" class="chat-box">
+                  <div class="message user">
+                    Analiza Tesla para los próximos 3 meses.
+                  </div>
+
+                  <div class="message ai">
+                    Tesla presenta un perfil de alta volatilidad. Puede ser interesante para investigación,
+                    pero requiere cautela por competencia, márgenes, valoración y sensibilidad al mercado.
+                  </div>
+                </div>
+
+                <div class="chat-form">
+                  <input id="chatInput" class="input" type="text" placeholder="Pregunta: Analiza AAPL, compara NVDA vs AMD..." />
+                  <button class="btn btn-primary" onclick="sendDemoMessage()">Enviar</button>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-title">
+                  <h3>Riesgo general</h3>
+                  <span class="badge yellow">Medio-Alto</span>
+                </div>
+
+                <div class="risk-list">
+                  <div>
+                    <div class="risk-item">
+                      <span>Volatilidad</span>
+                      <strong>78%</strong>
+                    </div>
+                    <div class="progress"><div style="width:78%"></div></div>
+                  </div>
+
+                  <div>
+                    <div class="risk-item">
+                      <span>Valoración</span>
+                      <strong>71%</strong>
+                    </div>
+                    <div class="progress"><div style="width:71%"></div></div>
+                  </div>
+
+                  <div>
+                    <div class="risk-item">
+                      <span>Riesgo sectorial</span>
+                      <strong>58%</strong>
+                    </div>
+                    <div class="progress"><div style="width:58%"></div></div>
+                  </div>
+
+                  <div>
+                    <div class="risk-item">
+                      <span>Confianza del análisis</span>
+                      <strong>74%</strong>
+                    </div>
+                    <div class="progress"><div style="width:74%"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">
+                <h3>Watchlist demo</h3>
+                <span class="badge green">Memoria activa</span>
+              </div>
+
+              <div class="analysis-grid">
+                <div class="analysis-card">
+                  <span>NVDA</span>
+                  <strong>Favorable con cautela</strong>
+                  <p style="color: var(--muted); margin-top: 8px; line-height: 1.55;">
+                    Fuerte demanda de IA, valoración exigente.
+                  </p>
+                </div>
+
+                <div class="analysis-card">
+                  <span>AAPL</span>
+                  <strong>Estable / defensiva</strong>
+                  <p style="color: var(--muted); margin-top: 8px; line-height: 1.55;">
+                    Flujo de caja sólido, crecimiento moderado.
+                  </p>
+                </div>
+
+                <div class="analysis-card">
+                  <span>TSLA</span>
+                  <strong>Alto riesgo</strong>
+                  <p style="color: var(--muted); margin-top: 8px; line-height: 1.55;">
+                    Alta volatilidad, competencia y presión de márgenes.
+                  </p>
+                </div>
+              </div>
+
+              <div class="disclaimer">
+                <strong>Nota:</strong> Esta demo no usa datos reales todavía. La versión funcional debe conectarse a APIs financieras,
+                Gemini, base de datos, sistema de verificación y control de cumplimiento.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="container">
+        <div class="section-head center">
+          <div class="kicker">Modelo de negocio</div>
+          <h2>Planes preparados para vender el agente.</h2>
+          <p>
+            Puedes iniciar con usuarios individuales y luego vender versión white-label
+            para academias, comunidades financieras o creadores de contenido.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <div class="pricing-card">
+            <h3>Free</h3>
+            <p>Para probar el sistema.</p>
+            <div class="price">$0 <small>/mes</small></div>
+            <ul class="pricing-list">
+              <li>3 análisis diarios</li>
+              <li>Watchlist básica</li>
+              <li>Resumen IA limitado</li>
+              <li>Educación básica</li>
+            </ul>
+            <a href="#dashboard" class="btn">Probar demo</a>
+          </div>
+
+          <div class="pricing-card featured">
+            <h3>Pro</h3>
+            <p>Para usuarios que investigan acciones con frecuencia.</p>
+            <div class="price">$19.99 <small>/mes</small></div>
+            <ul class="pricing-list">
+              <li>Análisis avanzados</li>
+              <li>Verificador Truth Guard</li>
+              <li>Alertas inteligentes</li>
+              <li>Historial de análisis</li>
+              <li>Reportes descargables</li>
+            </ul>
+            <a href="#dashboard" class="btn btn-primary">Elegir Pro</a>
+          </div>
+
+          <div class="pricing-card">
+            <h3>White Label</h3>
+            <p>Para negocios, academias o comunidades.</p>
+            <div class="price">$299+ <small>setup</small></div>
+            <ul class="pricing-list">
+              <li>Marca personalizada</li>
+              <li>Panel administrativo</li>
+              <li>Usuarios privados</li>
+              <li>Integración con comunidad</li>
+              <li>Mensualidad recurrente</li>
+            </ul>
+            <a href="#dashboard" class="btn">Solicitar acceso</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container">
+        <div class="cta-box">
+          <div class="kicker">Próxima fase</div>
+          <h2>TradeLens AI está listo para evolucionar a MVP real.</h2>
+          <p>
+            El próximo paso es conectar Gemini como motor principal, crear Firebase Auth,
+            guardar memoria del usuario, conectar una API financiera y añadir Stripe para vender planes.
+          </p>
+          <a href="#dashboard" class="btn btn-primary">Ver demo inicial</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>
+        <strong style="color: var(--text);">TradeLens AI</strong>
+        <p style="margin-top: 6px;">Agente de investigación bursátil con IA.</p>
+      </div>
+
+      <div>
+        © 2026 TradeLens AI. Todos los derechos reservados.
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="disclaimer">
+        <strong>Advertencia legal:</strong> TradeLens AI es una herramienta de investigación y educación financiera.
+        No ofrece asesoría financiera personalizada, no garantiza resultados y no debe interpretarse como una instrucción
+        directa de compra o venta de valores. Toda inversión conlleva riesgo.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const demoStocks = {
+      NVDA: {
+        company: "NVIDIA Corporation",
+        price: "$924.50",
+        trend: "Alcista",
+        confidence: "74%",
+        risk: "Riesgo Medio-Alto",
+        badge: "yellow",
+        summary:
+          "NVIDIA muestra fortaleza por demanda de IA, pero su valoración exige cautela. El análisis la clasifica como favorable para investigación, no como recomendación personalizada."
+      },
+      AAPL: {
+        company: "Apple Inc.",
+        price: "$189.20",
+        trend: "Neutral",
+        confidence: "69%",
+        risk: "Riesgo Medio",
+        badge: "green",
+        summary:
+          "Apple mantiene una posición financiera sólida y flujo de caja fuerte. Su crecimiento luce más moderado, por lo que el análisis se enfoca en estabilidad y valoración."
+      },
+      TSLA: {
+        company: "Tesla Inc.",
+        price: "$174.60",
+        trend: "Volátil",
+        confidence: "62%",
+        risk: "Riesgo Alto",
+        badge: "red",
+        summary:
+          "Tesla presenta alta volatilidad y sensibilidad a noticias, competencia y márgenes. Puede ser útil para investigación agresiva, pero requiere fuerte control de riesgo."
+      },
+      MSFT: {
+        company: "Microsoft Corporation",
+        price: "$421.80",
+        trend: "Alcista estable",
+        confidence: "77%",
+        risk: "Riesgo Medio",
+        badge: "green",
+        summary:
+          "Microsoft combina estabilidad, nube e inteligencia artificial. El perfil luce más balanceado que otras tecnológicas de alto crecimiento, aunque la valoración debe vigilarse."
+      },
+      AMD: {
+        company: "Advanced Micro Devices",
+        price: "$153.30",
+        trend: "Mixta",
+        confidence: "66%",
+        risk: "Riesgo Medio-Alto",
+        badge: "yellow",
+        summary:
+          "AMD mantiene exposición atractiva al sector de semiconductores, pero enfrenta competencia fuerte y sensibilidad a ciclos de demanda. Clasifica como investigación con cautela."
+      }
+    };
+
+    function runDemoAnalysis() {
+      const input = document.getElementById("tickerInput");
+      const ticker = input.value.trim().toUpperCase() || "NVDA";
+      const data = demoStocks[ticker] || {
+        company: "Empresa demo no conectada",
+        price: "Demo",
+        trend: "Pendiente",
+        confidence: "N/A",
+        risk: "Sin datos reales",
+        badge: "yellow",
+        summary:
+          "Este ticker todavía no está conectado a una API financiera. En la versión real, TradeLens AI buscará precio, noticias, métricas, riesgo y fuentes verificables."
+      };
+
+      document.getElementById("tickerName").textContent = ticker;
+      document.getElementById("companyName").textContent = data.company;
+      document.getElementById("demoPrice").textContent = data.price;
+      document.getElementById("demoTrend").textContent = data.trend;
+      document.getElementById("demoConfidence").textContent = data.confidence;
+      document.getElementById("aiSummary").textContent = data.summary;
+
+      const badge = document.getElementById("riskBadge");
+      badge.textContent = data.risk;
+      badge.className = "badge " + data.badge;
+    }
+
+    function sendDemoMessage() {
+      const input = document.getElementById("chatInput");
+      const chatBox = document.getElementById("chatBox");
+      const question = input.value.trim();
+
+      if (!question) return;
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.textContent = question;
+
+      const aiMsg = document.createElement("div");
+      aiMsg.className = "message ai";
+      aiMsg.textContent =
+        "Demo TradeLens AI: en la versión real, esta pregunta se enviará al orquestador Gemini, luego pasará por Market Data Agent, Risk Agent, Truth Guard y Compliance Agent antes de mostrar una respuesta final.";
+
+      chatBox.appendChild(userMsg);
+      chatBox.appendChild(aiMsg);
+
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
