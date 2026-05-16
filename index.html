@@ -35,7 +35,6 @@
       --red: #ef4444;
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
       --radius: 24px;
-      --radius-sm: 16px;
       --max: 1180px;
     }
 
@@ -66,8 +65,7 @@
     }
 
     button,
-    input,
-    select {
+    input {
       font-family: inherit;
     }
 
@@ -625,6 +623,9 @@
     .chat-box {
       display: grid;
       gap: 12px;
+      max-height: 460px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
     .message {
@@ -632,6 +633,8 @@
       border-radius: 17px;
       line-height: 1.55;
       font-size: .94rem;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
     }
 
     .message.user {
@@ -644,6 +647,12 @@
       background: rgba(255,255,255,.065);
       border: 1px solid rgba(255,255,255,.10);
       margin-right: 28px;
+    }
+
+    .message.error {
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.22);
+      color: #fecaca;
     }
 
     .chat-form {
@@ -852,10 +861,6 @@
       font-size: .9rem;
     }
 
-    .mobile-menu {
-      display: none;
-    }
-
     @media (max-width: 980px) {
       .hero-grid,
       .dashboard-top,
@@ -877,10 +882,6 @@
 
       .nav-links {
         display: none;
-      }
-
-      .mobile-menu {
-        display: inline-flex;
       }
     }
 
@@ -1050,7 +1051,7 @@
             <div class="market-card">
               <div class="panel-title">
                 <h3>Resumen IA</h3>
-                <span class="badge green">Verificado</span>
+                <span class="badge green">Demo</span>
               </div>
               <p id="aiSummary" style="color: var(--muted); line-height: 1.65;">
                 NVIDIA muestra fortaleza por demanda de IA, pero su valoración exige cautela.
@@ -1189,11 +1190,11 @@
     <section id="dashboard" class="dashboard">
       <div class="container">
         <div class="section-head">
-          <div class="kicker">Demo inicial</div>
-          <h2>Dashboard base para convertirlo en SaaS.</h2>
+          <div class="kicker">Demo conectada</div>
+          <h2>Dashboard base conectado con Gemini.</h2>
           <p>
-            Esta sección simula cómo se verá la plataforma. Luego se conecta con Gemini,
-            Firebase, APIs financieras, Stripe y sistema de alertas.
+            El chat de esta sección ya envía las preguntas al backend seguro en Vercel.
+            Luego podrás añadir datos reales de bolsa, memoria, login, Stripe y alertas.
           </p>
         </div>
 
@@ -1212,7 +1213,7 @@
               <div class="panel">
                 <div class="panel-title">
                   <h3>Chat con agente IA</h3>
-                  <span class="badge green">Demo</span>
+                  <span class="badge green">Gemini activo</span>
                 </div>
 
                 <div id="chatBox" class="chat-box">
@@ -1221,14 +1222,14 @@
                   </div>
 
                   <div class="message ai">
-                    Tesla presenta un perfil de alta volatilidad. Puede ser interesante para investigación,
-                    pero requiere cautela por competencia, márgenes, valoración y sensibilidad al mercado.
+                    TradeLens AI está conectado. Escribe una pregunta como:
+                    "Analiza Apple para largo plazo", "Compara Tesla vs Nvidia" o "Qué riesgos tiene AMD".
                   </div>
                 </div>
 
                 <div class="chat-form">
                   <input id="chatInput" class="input" type="text" placeholder="Pregunta: Analiza AAPL, compara NVDA vs AMD..." />
-                  <button class="btn btn-primary" onclick="sendDemoMessage()">Enviar</button>
+                  <button id="sendBtn" class="btn btn-primary" onclick="sendDemoMessage()">Enviar</button>
                 </div>
               </div>
 
@@ -1277,7 +1278,7 @@
             <div class="panel">
               <div class="panel-title">
                 <h3>Watchlist demo</h3>
-                <span class="badge green">Memoria activa</span>
+                <span class="badge green">Memoria futura</span>
               </div>
 
               <div class="analysis-grid">
@@ -1307,8 +1308,8 @@
               </div>
 
               <div class="disclaimer">
-                <strong>Nota:</strong> Esta demo no usa datos reales todavía. La versión funcional debe conectarse a APIs financieras,
-                Gemini, base de datos, sistema de verificación y control de cumplimiento.
+                <strong>Nota:</strong> Esta versión conecta el chat con Gemini, pero todavía no usa datos reales de mercado.
+                La próxima fase es conectar una API financiera, memoria del usuario, watchlist real y sistema de alertas.
               </div>
             </div>
           </div>
@@ -1376,12 +1377,12 @@
       <div class="container">
         <div class="cta-box">
           <div class="kicker">Próxima fase</div>
-          <h2>TradeLens AI está listo para evolucionar a MVP real.</h2>
+          <h2>TradeLens AI ya puede evolucionar a MVP real.</h2>
           <p>
-            El próximo paso es conectar Gemini como motor principal, crear Firebase Auth,
-            guardar memoria del usuario, conectar una API financiera y añadir Stripe para vender planes.
+            El siguiente paso es conectar datos reales de bolsa, crear Firebase Auth,
+            guardar memoria del usuario, añadir Stripe y dividir el backend en sub-agentes.
           </p>
-          <a href="#dashboard" class="btn btn-primary">Ver demo inicial</a>
+          <a href="#dashboard" class="btn btn-primary">Probar agente</a>
         </div>
       </div>
     </section>
@@ -1409,6 +1410,8 @@
   </footer>
 
   <script>
+    const BACKEND_URL = "https://tradelens-ecru.vercel.app/api/analyze";
+
     const demoStocks = {
       NVDA: {
         company: "NVIDIA Corporation",
@@ -1488,9 +1491,10 @@
       badge.className = "badge " + data.badge;
     }
 
-    function sendDemoMessage() {
+    async function sendDemoMessage() {
       const input = document.getElementById("chatInput");
       const chatBox = document.getElementById("chatBox");
+      const sendBtn = document.getElementById("sendBtn");
       const question = input.value.trim();
 
       if (!question) return;
@@ -1501,15 +1505,60 @@
 
       const aiMsg = document.createElement("div");
       aiMsg.className = "message ai";
-      aiMsg.textContent =
-        "Demo TradeLens AI: en la versión real, esta pregunta se enviará al orquestador Gemini, luego pasará por Market Data Agent, Risk Agent, Truth Guard y Compliance Agent antes de mostrar una respuesta final.";
+      aiMsg.textContent = "TradeLens AI está analizando...";
 
       chatBox.appendChild(userMsg);
       chatBox.appendChild(aiMsg);
 
       input.value = "";
+      input.disabled = true;
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Analizando...";
       chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const response = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: question
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Error en el análisis.");
+        }
+
+        aiMsg.textContent = data.answer;
+
+      } catch (error) {
+        console.error(error);
+        aiMsg.classList.add("error");
+        aiMsg.textContent =
+          "Hubo un error conectando con TradeLens AI. Verifica que Vercel esté activo, que la variable GEMINI_API_KEY esté guardada y que el backend permita llamadas desde GitHub Pages.";
+      } finally {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Enviar";
+        input.focus();
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const chatInput = document.getElementById("chatInput");
+
+      chatInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          sendDemoMessage();
+        }
+      });
+    });
   </script>
 </body>
 </html>
