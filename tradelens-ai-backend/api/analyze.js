@@ -74,7 +74,7 @@ async function fetchJson(url) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Error consultando API externa: ${response.status}`);
+    throw new Error(`Error consultando Finnhub: ${response.status}`);
   }
 
   return await response.json();
@@ -116,8 +116,16 @@ async function getMarketData(ticker) {
 
   const currentPrice = quote?.c ?? null;
   const previousClose = quote?.pc ?? null;
-  const change = currentPrice && previousClose ? currentPrice - previousClose : null;
-  const changePercent = currentPrice && previousClose ? ((change / previousClose) * 100) : null;
+
+  const change =
+    typeof currentPrice === "number" && typeof previousClose === "number"
+      ? currentPrice - previousClose
+      : null;
+
+  const changePercent =
+    typeof change === "number" && previousClose
+      ? (change / previousClose) * 100
+      : null;
 
   const cleanNews = Array.isArray(news)
     ? news.slice(0, 5).map(item => ({
@@ -157,185 +165,36 @@ async function getMarketData(ticker) {
   };
 }
 
-async function callGemini(prompt) {
-  const response = await ai.models.generateContent({
-    model: MODEL,
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: prompt }]
-      }
-    ]
-  });
-
-  return response.text || "";
-}
-
-function buildBaseRules() {
-  return `
-Reglas obligatorias para TradeLens AI:
-1. No prometas ganancias.
-2. No digas "compra ahora", "vende ahora", "invierte todo" ni "garantizado".
-3. No des asesoría financiera personalizada.
-4. No presentes predicciones como certeza.
-5. Siempre muestra riesgos.
-6. Distingue entre datos reales, análisis e incertidumbre.
-7. Si los datos están incompletos, dilo claramente.
-8. Usa lenguaje educativo, profesional y claro.
-9. Clasifica el análisis como investigación, no como instrucción de inversión.
-10. Finaliza con una advertencia breve.
-`;
-}
-
-async function runMainAgent(userMessage, marketData) {
+async function callGeminiOptimized(userMessage, marketData) {
   const prompt = `
-Eres el Agente Principal de TradeLens AI.
+Eres TradeLens AI, un agente de investigación bursátil con estructura interna multi-agente.
 
-Tu trabajo:
-Analizar la solicitud del usuario usando los datos reales disponibles de mercado.
-No inventes datos que no estén en el JSON.
+Aunque responderás en una sola salida, debes simular internamente estos roles:
+1. Agente Principal: interpreta la solicitud.
+2. Market Data Agent: usa solamente el JSON de datos reales disponible.
+3. Risk Agent: evalúa riesgos.
+4. Truth Guard: verifica que no se inventen datos.
+5. Compliance Agent: limpia lenguaje riesgoso o promesas.
 
-${buildBaseRules()}
+Reglas obligatorias:
+- No prometas ganancias.
+- No digas "compra ahora", "vende ahora", "entra ahora", "sal ahora" o "garantizado".
+- No des asesoría financiera personalizada.
+- No presentes predicciones como certeza.
+- No inventes precios, noticias, porcentajes ni métricas.
+- Si falta información, dilo claramente.
+- Separa datos reales de análisis e incertidumbre.
+- Usa lenguaje profesional, claro y útil.
+- Responde en español.
+- Finaliza con advertencia breve.
 
 Solicitud del usuario:
 ${userMessage}
 
-Datos reales disponibles:
+Datos reales disponibles desde Finnhub:
 ${JSON.stringify(marketData, null, 2)}
 
-Devuelve:
-- Resumen ejecutivo
-- Datos clave observados
-- Contexto general de la empresa
-- Puntos positivos
-- Puntos débiles
-- Factores que podrían mover la acción
-- Escenario alcista
-- Escenario neutral
-- Escenario bajista
-- Clasificación preliminar de investigación
-`;
-
-  return await callGemini(prompt);
-}
-
-async function runRiskAgent(userMessage, marketData, mainAnalysis) {
-  const prompt = `
-Eres el Risk Agent de TradeLens AI.
-
-Tu trabajo:
-Evaluar riesgos financieros, de mercado y de comportamiento del activo mencionado por el usuario.
-
-No debes recomendar comprar o vender.
-No inventes datos.
-Usa solamente el análisis y los datos disponibles.
-
-Solicitud del usuario:
-${userMessage}
-
-Datos reales disponibles:
-${JSON.stringify(marketData, null, 2)}
-
-Análisis preliminar del Agente Principal:
-${mainAnalysis}
-
-Evalúa:
-- Riesgo de volatilidad
-- Riesgo de valoración
-- Riesgo sectorial
-- Riesgo macroeconómico
-- Riesgo regulatorio
-- Riesgo por noticias
-- Riesgo por expectativas del mercado
-- Riesgo para principiantes
-
-Devuelve:
-- Risk Score de 0 a 100
-- Nivel de riesgo: Bajo, Medio, Alto o Especulativo
-- 5 riesgos principales
-- Qué tendría que mejorar
-- Qué podría empeorar
-- Perfil de usuario compatible: conservador, moderado o agresivo
-`;
-
-  return await callGemini(prompt);
-}
-
-async function runTruthGuard(userMessage, marketData, mainAnalysis, riskAnalysis) {
-  const prompt = `
-Eres Truth Guard, el verificador de exactitud de TradeLens AI.
-
-Tu trabajo:
-Revisar si el análisis contiene afirmaciones demasiado fuertes, datos no verificados o frases que aparentan certeza.
-
-Solicitud del usuario:
-${userMessage}
-
-Datos reales disponibles:
-${JSON.stringify(marketData, null, 2)}
-
-Análisis principal:
-${mainAnalysis}
-
-Análisis de riesgo:
-${riskAnalysis}
-
-Reglas:
-- Si aparece un precio, cambio porcentual, nombre de empresa, exchange o noticia, debe venir del JSON.
-- Si algo no está en el JSON, debe marcarse como inferencia o contexto general.
-- No permitas promesas de ganancias.
-- No permitas recomendaciones directas de compra o venta.
-
-Devuelve:
-- Afirmaciones que deben suavizarse
-- Datos que requieren fuente
-- Posibles exageraciones
-- Correcciones necesarias
-- Veredicto: Aprobado, Aprobado con cautela o Requiere corrección
-`;
-
-  return await callGemini(prompt);
-}
-
-async function runComplianceAgent(userMessage, marketData, mainAnalysis, riskAnalysis, verification) {
-  const prompt = `
-Eres el Compliance Agent de TradeLens AI.
-
-Tu trabajo:
-Crear la respuesta final para el usuario usando datos reales disponibles, análisis principal, análisis de riesgo y verificación.
-
-Debe sonar profesional, claro y útil.
-
-No puedes:
-- Prometer ganancias
-- Decir que una acción subirá seguro
-- Decir "compra", "vende", "entra ahora", "sal ahora"
-- Dar asesoría financiera personalizada
-- Usar lenguaje de señal garantizada
-
-Sí puedes:
-- Explicar escenarios
-- Hablar de riesgos
-- Clasificar como investigación
-- Recomendar estudiar, monitorear o comparar
-- Indicar que faltan datos si aplica
-
-Solicitud del usuario:
-${userMessage}
-
-Datos reales disponibles:
-${JSON.stringify(marketData, null, 2)}
-
-Análisis principal:
-${mainAnalysis}
-
-Análisis de riesgo:
-${riskAnalysis}
-
-Verificación Truth Guard:
-${verification}
-
-Crea una respuesta final con este formato:
+Formato obligatorio de respuesta:
 
 TradeLens AI — Análisis
 
@@ -354,10 +213,41 @@ TradeLens AI — Análisis
 13. Próximos datos que conviene verificar
 14. Advertencia
 
-La respuesta debe estar en español.
+Notas:
+- Si los datos de Finnhub vienen incompletos, acláralo.
+- Si no hay noticias recientes suficientes, dilo.
+- El Risk Score debe ser una estimación educativa, no una recomendación.
 `;
 
-  return await callGemini(prompt);
+  const response = await ai.models.generateContent({
+    model: MODEL,
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: prompt }]
+      }
+    ]
+  });
+
+  return response.text || "";
+}
+
+function getFriendlyError(error) {
+  const message = error?.message || "";
+
+  if (error?.status === 429 || message.includes("429") || message.includes("quota")) {
+    return "Gemini alcanzó el límite de uso del plan actual. Espera unos minutos o reduce la cantidad de análisis. En esta versión optimizada, cada análisis usa solo 1 llamada.";
+  }
+
+  if (message.includes("FINNHUB_API_KEY")) {
+    return "Falta FINNHUB_API_KEY en Vercel.";
+  }
+
+  if (message.includes("GEMINI_API_KEY")) {
+    return "Falta GEMINI_API_KEY en Vercel.";
+  }
+
+  return message || "Error generando análisis con TradeLens AI.";
 }
 
 export default async function handler(req, res) {
@@ -370,7 +260,8 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       success: true,
-      message: "TradeLens AI backend con API real de mercado está activo. Usa POST para analizar."
+      message: "TradeLens AI backend optimizado con Finnhub y Gemini está activo. Usa POST para analizar.",
+      mode: "optimized-single-call"
     });
   }
 
@@ -385,7 +276,7 @@ export default async function handler(req, res) {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
         success: false,
-        error: "Falta la variable GEMINI_API_KEY en Vercel."
+        error: "Falta GEMINI_API_KEY en Vercel."
       });
     }
 
@@ -400,29 +291,16 @@ export default async function handler(req, res) {
     }
 
     const detectedTicker = cleanText(ticker || extractTicker(userMessage));
+
     const marketData = await getMarketData(detectedTicker);
 
-    const mainAnalysis = await runMainAgent(userMessage, marketData);
-    const riskAnalysis = await runRiskAgent(userMessage, marketData, mainAnalysis);
-    const verification = await runTruthGuard(userMessage, marketData, mainAnalysis, riskAnalysis);
-    const finalAnswer = await runComplianceAgent(
-      userMessage,
-      marketData,
-      mainAnalysis,
-      riskAnalysis,
-      verification
-    );
+    const finalAnswer = await callGeminiOptimized(userMessage, marketData);
 
     return res.status(200).json({
       success: true,
-      mode: "multi-agent-with-market-data",
+      mode: "optimized-single-call-with-market-data",
       ticker: detectedTicker,
       marketData,
-      agents: {
-        mainAgent: mainAnalysis,
-        riskAgent: riskAnalysis,
-        truthGuard: verification
-      },
       answer: finalAnswer
     });
 
@@ -431,7 +309,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       success: false,
-      error: error.message || "Error generando análisis con TradeLens AI."
+      error: getFriendlyError(error)
     });
   }
 }
