@@ -38,10 +38,30 @@ Formato de respuesta:
 - Advertencia
 `;
 
+function setCorsHeaders(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
 export default async function handler(req, res) {
+  setCorsHeaders(res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  if (req.method === "GET") {
+    return res.status(200).json({
+      success: true,
+      message: "TradeLens AI backend está activo. Usa POST para analizar."
+    });
+  }
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({
+        success: false,
         error: "Método no permitido. Usa POST."
       });
     }
@@ -50,7 +70,15 @@ export default async function handler(req, res) {
 
     if (!message && !ticker) {
       return res.status(400).json({
+        success: false,
         error: "Debes enviar un mensaje o ticker para analizar."
+      });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "Falta la variable GEMINI_API_KEY en Vercel."
       });
     }
 
@@ -90,7 +118,7 @@ Debes aclarar que el análisis es educativo y basado en contexto general, no en 
 
     return res.status(500).json({
       success: false,
-      error: "Error generando análisis con TradeLens AI."
+      error: error.message || "Error generando análisis con TradeLens AI."
     });
   }
 }
